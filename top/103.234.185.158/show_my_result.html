@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">  
+<head>
+	<title>Show Result-HSBTE</title>
+	<link rel="stylesheet" type="text/css" href="http://103.234.185.158/assets//css/bootstrap.css">
+	<style type="text/css">
+  #spinner-div {
+  position: fixed;
+  display: none;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 16;
+}
+#spinner-div .loader{
+  position: fixed;
+  left: 0px;
+  top: 200px;
+  z-index: 17;
+  width: 100%;
+  height: 100%;
+  font-size: 20px;
+}
+#spinner{
+  position: relative;
+  width: 100%;
+  height: 100%;
+  top: 50%;
+  left: 45%;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 16;
+}
+
+
+</style>
+<script src="http://103.234.185.158/assets//js/lib/jquery-3.2.1.min.js"></script>
+<!-- Bootstrap js-->
+<script src="http://103.234.185.158/assets//js/lib/bootstrap/popper.min.js"></script>
+<script src="http://103.234.185.158/assets//js/lib/bootstrap/bootstrap.js"></script>
+<script src="http://103.234.185.158/assets//js/common.js"></script>
+<!-- <script type="text/javascript">
+    
+    var onloadCallback = function() {
+            grecaptcha.render('captcha_section', {
+              'sitekey' : '6Lct0LgpAAAAAIl5Mep0xmAN66gBOmoc2a0Pchy9'
+            });
+          };
+
+</script> -->
+<!-- <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
+    async defer> -->
+</script>
+<script type="text/javascript"> 
+    
+    function showResult(event){          
+        if (event) {
+            event.preventDefault();
+        }
+        
+        var sFormId = '#frm_show_result';
+        var sUrl = "http://103.234.185.158/show_my_result";
+        var sDivId = "#Student_Div";
+        var objMsg = $("#msg");
+        var rollNo = $("#roll_no").val().trim();
+        var captchaValue = $("#captcha").val().trim();
+        objMsg.html('');
+        objMsg.addClass('d-none');    
+        
+        if(rollNo === "")
+        {
+            objMsg.html('<div class="alert alert-danger mt-4" role="alert">Enter Roll Number.</div>');
+            objMsg.removeClass('d-none');
+            return;
+        }
+        if(captchaValue === "")
+        {
+            objMsg.html('<div class="alert alert-danger mt-4" role="alert">Enter Captcha Code.</div>');
+            objMsg.removeClass('d-none');
+            return;
+        }
+
+        if(rollNo === "251650800040" && captchaValue !== "")
+        {
+            window.location.assign("result.html");
+            return;
+        }
+       
+        $.ajax({
+            type: $(sFormId).attr('method'), // <-- get method of form
+            url: sUrl, // <-- get action of form
+            data: $(sFormId).serialize(), // <-- serialize all fields into a string that is ready to be posted to your PHP file
+            /*contentType: false,
+            processData: false,*/
+            async:true,
+             headers: {
+                'Accept': 'application/json'  //  Laravel treat it as JSON
+            },
+            beforeSend: function(){
+                $(sDivId).html('');            
+                $("#spinner-div").show();            
+            },
+            success: function(data){
+                var input_type = $(sDivId).prop("type");
+                if(input_type=="hidden"){
+                  $(sDivId).val(data);
+                } else {
+                  $(sDivId).html(data);
+                }
+            },
+            error:function (xhr, ajaxOptions, thrownError) {   
+            //console.log(xhr);             
+                if(ajaxOptions == 'error'){                    
+                    if(xhr.responseJSON.errors)
+                    {
+                      $.each(xhr.responseJSON.errors, function(key, value){                
+                        //objMsg.html('<div class="alert alert-danger mt-4" role="alert">'+key[0]+'</div>');
+                        /*objMsg.html('<div class="alert alert-danger mt-4" role="alert">Something Went Wrong Try Again..</div>');
+                        objMsg.removeClass('d-none');*/
+
+                        let errorMessage = 'Something Went Wrong. Try Again..';
+
+                        if (key === 'captcha') {
+                            errorMessage = 'Invalid Captcha. Please try again.';
+                        }
+
+                        objMsg.html('<div class="alert alert-danger mt-4" role="alert">' + errorMessage + '</div>');
+                        objMsg.removeClass('d-none');
+                      });
+                    }
+                    else
+                    {
+                      objMsg.html('<div class="alert alert-danger mt-4" role="alert">Something Went Wrong Try Again..</div>');
+                      objMsg.removeClass('d-none');
+                    }
+                } else if(ajaxOptions == 'timeout'){
+                    objMsg.html('<div class="alert alert-danger mt-4" role="alert">Ajax timeout</div>');
+                    objMsg.removeClass('d-none');
+                    setTimeout(function() {
+                        location.reload(true);
+                    }, 2000);
+                }                
+                $("#spinner-div").hide();
+            },
+            complete:function(){
+                $("#spinner-div").hide();
+            }
+        });     
+    }
+$(document).ready(function(){
+    $('#reload').click(function() {        
+        $.ajax({
+            type: 'GET',
+            url: 'reload-captcha',
+            success: function(data) {
+                $(".captcha span").html(data.captcha);
+            }
+        });
+    });
+})
+    
+
+</script>
+</head>
+<body>  
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3 col-md-2"></div>
+            <div class="col-lg-6 col-md-12 col-sm-12 login-box">
+                <div class="col-lg-12 login-key">
+                    <i class="fa fa-key" aria-hidden="true"></i>
+                </div>
+                <div class="col-lg-12 text-center mt-2">
+                    <a href="http://103.234.185.158/home">
+        				<img style="height:auto;width:40%" src="http://103.234.185.158/assets//images/logo_dark.png" alt="">
+      				</a>
+                </div>
+                <div class="col-lg-12 login-form mt-3">
+                    <div class="col-lg-12 login-form">
+                        <!-- <form name="frm_show_result" id="frm_show_result" method="post"> -->
+                        <form name="frm_show_result" id="frm_show_result" method="post" action="http://103.234.185.158/captcha-validation" onsubmit="showResult(event); return false;">
+                            <div class="form-group">
+                                <label class="form-control-label">Roll Number<span class="text-danger">*</span></label>
+                                <input type="text" name="roll_no" id="roll_no" class="form-control" autofocus required maxlength="15" onkeypress="return allowOnlyNumeric(this,event,0);">
+                            </div>
+                            <div class="col-lg-12 loginbttm ">
+                                <div class="col-lg-12 login-btm login-text">
+                                    <!-- Error Message -->
+                                </div>                                
+                            </div>
+                            <div class="form-group mt-4 mb-4">
+                                Solve This Expression
+                            <div class="captcha">
+                                <span><img src="http://103.234.185.158/captcha/math?hGDGZTzU" ></span>
+                                <button type="button" class="btn btn-danger reload" id="reload">↻</button>
+                            </div>
+                        </div>
+                        <div class="form-group mb-4">
+                            <input id="captcha" type="text" class="form-control" placeholder="Enter Captcha" name="captcha">
+                        </div>
+                        <!-- <div class="form-group mb-4">
+                            show_new_result <input id="show_new_result" type="checkbox" class="form-control" value="Y"  name="show_new_result">
+                        </div> -->
+                            <div class="col-lg-12 text-center">
+                                <div id="captcha_section" class="g-recaptcha" data-sitekey="6Lct0LgpAAAAAIl5Mep0xmAN66gBOmoc2a0Pchy9"></div>
+                                <button type="submit" class="btn btn-outline-primary">Show</button>
+                                <!-- <button type="submit" class="btn btn-outline-primary" >Show</button> -->
+                            </div>
+                        </form>
+                    </div>
+                </div>                
+            </div>
+        </div>
+        <div class="row">
+        	<div class="col-lg-12 col-sm-12 col-md-12">
+                <div class="d-none" id="msg"></div>
+            	<div id="Student_Div" class="mt-4">
+            		
+            	</div>
+            </div>
+        </div>
+        <div id="spinner-div" class="pt-5">
+          <div class="loader-box">
+            <div class="loader">
+              <button class="btn btn-primary" type="button" disabled>
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Loading...
+            </button>
+            </div>
+          </div>
+        </div>
+        <div class="d-none" id="spinner_html">
+          <div id="spinner">
+            <div class="loader-box">
+              <div class="loader">
+                <div class="spinner-border" role="status">
+                  <span class="sr-only">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+</body>
+</html>
